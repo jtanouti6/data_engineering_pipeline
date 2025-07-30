@@ -93,3 +93,9 @@ docker logs pipeline_job
 ==============================
 📘 FIN DU GUIDE
 ==============================
+
+cd ~/data_engineering_pipeline/actions-runner
+./run.sh
+sudo systemctl restart actions.runner.*
+sudo systemctl status actions.runner.*
+

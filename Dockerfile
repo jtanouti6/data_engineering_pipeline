@@ -18,6 +18,16 @@ COPY processing/ ./processing/
 COPY config/ ./config/
 COPY transformations/ ./transformations/
 # etc., ou COPY . /app si tu veux tout
+# ========== Création utilisateur dynamique (non-root) ==========
+# Ces valeurs seront injectées par Docker Compose via les variables USER_ID et GROUP_ID
 
-# CMD final
-CMD ["bash", "orchestration/pipeline_master.sh"]
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+
+# Création d’un utilisateur non-root avec le bon UID/GID
+RUN addgroup --gid $GROUP_ID appgroup && \
+    adduser --disabled-password --gecos '' --uid $USER_ID --gid $GROUP_ID appuser && \
+    chown -R $USER_ID:$GROUP_ID /app
+
+# Exécution finale en tant qu’appuser via su -
+CMD ["su", "appuser", "-c", "bash /app/orchestration/pipeline_master.sh"]

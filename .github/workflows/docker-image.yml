@@ -1,62 +1,51 @@
-name: 📦 Build & Run Data Pipeline
+name: 🚀 CI - Build & Run Pipeline
 
 on:
   push:
     branches:
       - main
   pull_request:
-    types: [closed]
     branches:
       - main
-  workflow_dispatch:  # Déclenchement manuel
+    types:
+      - closed
+  workflow_dispatch:
 
 jobs:
-  run-pipeline:
-    if: github.event.pull_request.merged == true || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+  build-and-run:
+    if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
     runs-on: self-hosted
+    name: 🧱 Build + 🏃 Run Pipeline
 
     steps:
-      - name: 🧩 Checkout code
+      - name: 🧬 Checkout code
         uses: actions/checkout@v4
 
-      - name: 🔧 Créer les dossiers data/logs avec bons droits
-        run: |
-          sudo mkdir -p data logs
-          sudo chown -R $USER:$USER data logs
-
-      - name: 🕓 Définir le tag de version (date du jour)
+      - name: 🕒 Générer un tag de version (date/heure)
         id: version
-        run: |
-          echo "tag=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+        run: echo "tag=$(date +'%Y-%m-%d-%H%M')" >> $GITHUB_OUTPUT
 
-      - name: 🔐 Définir UID/GID pour Docker Compose
-        run: |
-          echo "UID=$(id -u)" >> $GITHUB_ENV
-          echo "GID=$(id -g)" >> $GITHUB_ENV
-
-      - name: 🛠️ Construire l'image Docker avec tag
-        env:
-          UID: ${{ env.UID }}
-          GID: ${{ env.GID }}
+      - name: 🐳 Construire l'image Docker avec le tag versionné
         run: |
           docker compose build
           docker tag img-pl-dt-eng img-pl-dt-eng:${{ steps.version.outputs.tag }}
 
-      - name: 🚀 Lancer le pipeline dans le conteneur
-        env:
-          UID: ${{ env.UID }}
-          GID: ${{ env.GID }}
+      - name: 🔄 Retag pour usage danls docker-compose
         run: |
-          echo "Lancement du conteneur avec UID=$UID GID=$GID"
-          docker compose run --rm srv-pl-dt-eng
+          docker tag img-pl-dt-eng:${{ steps.version.outputs.tag }} img-pl-dt-eng
 
-      - name: 🧹 Corriger les permissions post-exécution
+      - name: 🚀 Exécuter le pipeline via le service docker-compose
         run: |
-          sudo chown -R $USER:$USER data logs
+          docker compose run srv-pl-dt-eng
 
-      - name: 📤 Sauvegarder le dashboard HTML (si existant)
+      - name: 📂 Sauvegarder les artefacts générés (dashboard, logs)
         uses: actions/upload-artifact@v4
         with:
-          name: dashboard_html
-          path: data/quality/dashboard_quality.html
+          name: dashboard-et-logs
+          path: |
+            data/processed/dashboard_quality.html
+            logs/*.log
           if-no-files-found: warn
+      - name: 🔧 Corriger les droits d'accès
+        run: |
+            sudo chown -R administrateur:administrateur data/ logs/

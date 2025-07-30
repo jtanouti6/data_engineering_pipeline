@@ -176,5 +176,6 @@ run_alert_manager
 generate_dashboard              # Génére le tableau de bord html de la qualité de donnée
 archive_processed_data          # Archivage des fichiers traités
 echo "✅ PIPELINE TERMINÉ À $(date)" | tee -a "$LOG_FILE"
-
+# 🧹 Correction des permissions pour le runner GitHub
+chown -R $(id -u):$(id -g) "$PIPELINE_ROOT/data" "$PIPELINE_ROOT/logs" 2>/dev/null || true
 exit 0  # Fin du script avec succès
