@@ -1,0 +1,62 @@
+name: 📦 Build & Run Data Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+  workflow_dispatch:  # Déclenchement manuel
+
+jobs:
+  run-pipeline:
+    if: github.event.pull_request.merged == true || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: self-hosted
+
+    steps:
+      - name: 🧩 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Créer les dossiers data/logs avec bons droits
+        run: |
+          sudo mkdir -p data logs
+          sudo chown -R $USER:$USER data logs
+
+      - name: 🕓 Définir le tag de version (date du jour)
+        id: version
+        run: |
+          echo "tag=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: 🔐 Définir UID/GID pour Docker Compose
+        run: |
+          echo "UID=$(id -u)" >> $GITHUB_ENV
+          echo "GID=$(id -g)" >> $GITHUB_ENV
+
+      - name: 🛠️ Construire l'image Docker avec tag
+        env:
+          UID: ${{ env.UID }}
+          GID: ${{ env.GID }}
+        run: |
+          docker compose build
+          docker tag img-pl-dt-eng img-pl-dt-eng:${{ steps.version.outputs.tag }}
+
+      - name: 🚀 Lancer le pipeline dans le conteneur
+        env:
+          UID: ${{ env.UID }}
+          GID: ${{ env.GID }}
+        run: |
+          echo "Lancement du conteneur avec UID=$UID GID=$GID"
+          docker compose run --rm srv-pl-dt-eng
+
+      - name: 🧹 Corriger les permissions post-exécution
+        run: |
+          sudo chown -R $USER:$USER data logs
+
+      - name: 📤 Sauvegarder le dashboard HTML (si existant)
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard_html
+          path: data/quality/dashboard_quality.html
+          if-no-files-found: warn
