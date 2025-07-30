@@ -1,0 +1,112 @@
+
+==========================
+📦 DOCUMENTATION : Docker - Commandes & Concepts
+==========================
+
+Ce fichier contient les commandes Docker les plus utiles pour construire, exécuter, déboguer et gérer des containers et images, avec explications et exemples pratiques.
+
+--------------------------------------------------
+🔹 1. Images et Dockerfile
+--------------------------------------------------
+
+# Construire une image à partir du Dockerfile
+docker build -t mon_image_nom .
+
+# Utiliser un argument de build (avec ARG dans Dockerfile)
+docker build --build-arg VERSION=1.0 -t mon_image:v1 .
+
+# Lister les images disponibles
+docker images
+
+# Supprimer une image
+docker rmi mon_image_nom
+
+--------------------------------------------------
+🔹 2. Lancer des containers
+--------------------------------------------------
+
+# Exécuter un container simple
+docker run mon_image_nom
+
+# Supprimer le container après exécution (--rm)
+docker run --rm mon_image_nom
+
+# Exécuter en mode interactif (accès shell)
+docker run -it mon_image_nom
+
+# Définir une commande différente de CMD
+docker run mon_image_nom bash
+
+# Monter un volume (dossier local dans le container)
+docker run -v $(pwd)/data:/app/data mon_image_nom
+
+# Rediriger un port du container vers l’hôte
+docker run -p 8080:80 mon_image_web
+
+# Donner un nom au container
+docker run --name mon_container mon_image
+
+--------------------------------------------------
+🔹 3. Gestion des containers
+--------------------------------------------------
+
+# Lister les containers en cours
+docker ps
+
+# Lister tous les containers (même arrêtés)
+docker ps -a
+
+# Arrêter un container
+docker stop mon_container
+
+# Supprimer un container
+docker rm mon_container
+
+# Voir les logs d’un container
+docker logs mon_container
+
+# Accéder à l’intérieur d’un container en cours
+docker exec -it mon_container bash
+
+--------------------------------------------------
+🔹 4. Dockerfile – Exemples utiles
+--------------------------------------------------
+
+FROM python:3.11-slim                    # Image de base
+RUN apt-get update && apt-get install -y bash make
+WORKDIR /app
+COPY . /app
+RUN pip install -r requirements.txt
+CMD ["bash", "orchestration/pipeline_master.sh"]
+
+# Autres options :
+# ENV VARIABLE=value       -> Variable d’environnement
+# EXPOSE 8000              -> Documente un port utilisé
+# VOLUME /data             -> Marque un volume pour persistance
+# LABEL version="1.0"      -> Métadonnée
+# ARG VERSION              -> Variable de build
+
+--------------------------------------------------
+🔹 5. Nettoyage Docker (entretien)
+--------------------------------------------------
+
+# Supprimer toutes les images non utilisées
+docker image prune
+
+# Supprimer tous les containers arrêtés
+docker container prune
+
+# Supprimer tout (dangereux !)
+docker system prune -a
+
+--------------------------------------------------
+🔹 6. Ressources utiles
+--------------------------------------------------
+
+Docs officielles : https://docs.docker.com/
+CheatSheet : https://dockerlabs.collabnix.com/docker/cheatsheet/
+Playground en ligne : https://labs.play-with-docker.com/
+
+==========================
+📘 Fin du fichier
+==========================

@@ -1,0 +1,114 @@
+# 🛠️ Diagnostic GitHub Actions Runner - Self-Hosted
+
+Ce fichier regroupe toutes les étapes de diagnostic et de résolution liées aux problèmes rencontrés avec un runner GitHub Actions auto-hébergé (self-hosted), notamment sous WSL/Linux.
+
+---
+
+## ✅ 1. Vérifier si le runner tourne
+
+```bash
+sudo systemctl status actions.runner.<nom_du_runner>.service
+```
+
+> Exemple :
+```bash
+sudo systemctl status actions.runner.jtanouti6-data_engineering_pipeline.WIN-R8C3MG81CU8.service
+```
+
+- 🔵 `active (running)` → OK
+- 🔴 `failed` → voir les logs
+
+---
+
+## ✅ 2. Vérifier que le script `runsvc.sh` existe et est exécutable
+
+```bash
+ls -l ~/data_engineer_pipeline/actions-runner/runsvc.sh
+chmod +x ~/data_engineer_pipeline/actions-runner/runsvc.sh
+```
+
+---
+
+## ✅ 3. Vérifier le contenu du fichier .service
+
+```bash
+sudo nano /etc/systemd/system/actions.runner.jtanouti6-data_engineering_pipeline.WIN-R8C3MG81CU8.service
+```
+
+### Corriger les chemins si besoin :
+
+```ini
+ExecStart=/home/administrateur/data_engineer_pipeline/actions-runner/runsvc.sh
+WorkingDirectory=/home/administrateur/data_engineer_pipeline/actions-runner
+User=administrateur
+```
+
+---
+
+## ✅ 4. Redémarrer systemd après modification
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart actions.runner.<nom_du_runner>.service
+```
+
+---
+
+## ✅ 5. Supprimer un service systemd obsolète
+
+```bash
+sudo rm /etc/systemd/system/actions.runner.jtanouti6-data_engineering_pipeline.WIN-R8C3MG81CU8.service
+sudo systemctl daemon-reload
+```
+
+---
+
+## ✅ 6. Supprimer complètement un ancien runner
+
+```bash
+cd ~/data_engineer_pipeline/actions-runner
+./config.sh remove --token <TON_TOKEN_SECRET>
+```
+
+---
+
+## ✅ 7. Réinstaller un runner proprement
+
+```bash
+mkdir actions-runner && cd actions-runner
+curl -o actions-runner-linux-x64-2.327.1.tar.gz -L https://github.com/actions/runner/releases/download/v2.327.1/actions-runner-linux-x64-2.327.1.tar.gz
+tar xzf actions-runner-linux-x64-2.327.1.tar.gz
+```
+
+---
+
+## ✅ 8. Reconfigurer le runner
+
+```bash
+./config.sh --url https://github.com/jtanouti6/data_engineering_pipeline --token <TON_TOKEN_SECRET>
+```
+
+---
+
+## ✅ 9. Réinstaller le service systemd
+
+```bash
+./svc.sh install
+./svc.sh start
+```
+
+Et vérifier :
+```bash
+sudo systemctl status actions.runner.jtanouti6-data_engineering_pipeline.WIN-R8C3MG81CU8.service
+```
+
+---
+
+## ✅ 10. Supprimer le runner depuis GitHub (interface)
+
+Aller dans :
+```
+https://github.com/jtanouti6/data_engineering_pipeline/settings/actions/runners
+```
+→ Supprimer manuellement les runners hors ligne (🗑️)
+

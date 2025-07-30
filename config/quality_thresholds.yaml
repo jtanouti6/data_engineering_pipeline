@@ -1,0 +1,7 @@
+global_threshold: 90
+
+thresholds:
+  logs: 97
+  sessions: 95
+  products: 96
+  users: 95

@@ -1,0 +1,12 @@
+services:
+  srv-pl-dt-eng:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: img-pl-dt-eng
+    container_name: ctnr-pl-dt-eng
+    user: "1000:1000"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    restart: "no"

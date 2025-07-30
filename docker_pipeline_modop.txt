@@ -1,0 +1,95 @@
+
+==============================
+📘 GUIDE D'INSTALLATION & USAGE DU PIPELINE DOCKERISÉ
+==============================
+
+Ce guide récapitule les étapes nécessaires pour construire et exécuter le pipeline e-commerce avec Docker et Docker Compose.
+
+--------------------------------------------------
+🔹 PRÉREQUIS
+--------------------------------------------------
+- Docker Desktop installé et configuré avec WSL2
+- Projet structuré avec un Dockerfile et un docker-compose.yml
+- Dossiers `data/raw/` (fichiers source) et `logs/` (sorties) présents
+
+--------------------------------------------------
+🔹 STRUCTURE ATTENDUE
+--------------------------------------------------
+
+ton-projet/
+├── Dockerfile
+├── docker-compose.yml
+├── .dockerignore
+├── data/
+│   └── raw/
+├── logs/
+├── orchestration/
+│   └── pipeline_master.sh
+├── requirements.txt
+└── ...
+
+--------------------------------------------------
+🔹 .dockerignore (exemple)
+--------------------------------------------------
+
+data/processed/
+data/staging/
+data/archive/
+data/quality/
+venv/
+__pycache__/
+*.pyc
+*.log
+.git/
+!data/raw/**
+
+--------------------------------------------------
+🔹 docker-compose.yml (avec build automatique)
+--------------------------------------------------
+
+version: "3.9"
+
+services:
+  pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pipeline_data_engineer
+    container_name: pipeline_job
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    restart: "no"
+
+--------------------------------------------------
+🔹 COMMANDES PRINCIPALES
+--------------------------------------------------
+
+# 1. Construire l’image avec Docker Compose
+docker compose build
+
+# 2. Lancer le pipeline avec les bons volumes
+docker compose run pipeline
+
+# 3. Vérifier les fichiers générés localement
+ls ./data/processed/
+ls ./logs/
+
+# 4. Nettoyer les containers ou images si besoin
+docker container prune     # Supprime les containers arrêtés
+docker image prune         # Supprime les images inutilisées
+docker system prune -a     # Tout nettoyer (dangereux)
+
+--------------------------------------------------
+🔹 EN CAS DE BESOIN
+--------------------------------------------------
+
+# Ouvrir un shell dans le container pour debug
+docker compose run pipeline bash
+
+# Voir les logs du container lancé
+docker logs pipeline_job
+
+==============================
+📘 FIN DU GUIDE
+==============================

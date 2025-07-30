@@ -1,0 +1,9 @@
+data/
+logs/
+venv/
+actions-runner/
+pipeline.tar
+__pycache__/
+*.log
+pipeline.tar
+*.csv

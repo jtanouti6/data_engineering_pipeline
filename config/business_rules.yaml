@@ -1,0 +1,75 @@
+# =============================
+# 🧠 Fichier de règles métier YAML
+# Chaque bloc correspond à une source de données (logs, sessions, users, etc.)
+# =============================
+
+logs:
+  # 🔢 Vérifie que le code HTTP est bien dans la plage 100–599
+  status_code:
+    allowed_range: [100, 599]
+
+  # ⏱️ Temps de réponse max autorisé = 10 000 ms (10 secondes)
+  response_time_ms:
+    max_value: 10000
+
+  # ✅ Méthodes HTTP autorisées
+  method:
+    allowed_values: ["GET", "POST", "PUT", "DELETE"]
+
+  # 🌐 Exemple imaginaire : pays interdits
+  country_code:
+    not_allowed_values: [""]
+
+sessions:
+  pages_visited:
+    min_value: 0  # Impossible de visiter un nombre négatif de pages
+
+  conversion:
+    allowed_values: [true, false]  # Ne doit contenir que des booléens
+
+  products_added_to_cart:
+    min_value: 0
+
+  total_spent:
+    min_value: 0.0
+
+  # 📅 Exemple imaginaire : session ne dure pas plus de 6 heures
+  duration_min:
+    max_value: 360
+
+products:
+  price:
+    min_value: 0.0
+
+  cost:
+    min_value: 0.0
+
+  stock:
+    min_value: 0  # Aucun stock négatif autorisé
+
+  rating:
+    allowed_range: [0, 5]  # Échelle de notation
+
+  review_count:
+    min_value: 0
+
+  # 🏷️ Exemple imaginaire : catégories valides uniquement
+  # category:
+    # allowed_values: ["Vêtements", "Chaussures", "Accessoires", "Électronique"]
+
+users:
+  age:
+    allowed_range: [16, 100]  # Pas d’enfants ou de supercentenaires dans l’échantillon
+
+  total_orders:
+    min_value: 0
+
+  total_spent:
+    min_value: 0.0
+
+  gender:
+    allowed_values: ["M", "F", "O"]  # O pour autre
+
+  # 📧 Exemple imaginaire : emails internes interdits
+  email:
+    not_allowed_values: ["admin@example.com", "root@example.org"]
