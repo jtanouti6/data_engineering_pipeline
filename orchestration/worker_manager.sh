@@ -21,22 +21,35 @@ fi
 # Fonction locale pour déterminer le type de traitement à appliquer selon le nom du fichier
 process_file() {
     file="$1"
+    chunk_size="$2"
     filename=$(basename "$file")
 
     echo "▶️  Traitement de $filename" | tee -a "$LOG_FILE"
 
     case "$filename" in
         api_logs_*.json)
-            python3 "$PIPELINE_ROOT/processing/api_log_processor.py" --input "$file"
+            python3 "$PIPELINE_ROOT/processing/api_log_processor.py" --input "$file" ---chunksize "$chunk_size"
+            echo "🚀 Démarrage du worker $((i+1)) sur le fichier : $file" | tee -a "$LOG_FILE"
+            echo "🆔 PID du worker : $!" | tee -a "$LOG_FILE"
+            pids+=($!)
             ;;
         sessions_*.csv)
             python3 "$PIPELINE_ROOT/processing/session_processor.py" --input "$file" 
+            echo "🚀 Démarrage du worker $((i+1)) sur le fichier : $file" | tee -a "$LOG_FILE"
+            echo "🆔 PID du worker : $!" | tee -a "$LOG_FILE"
+            pids+=($!)
             ;;
         users_database.csv)
             python3 "$PIPELINE_ROOT/processing/business_processor.py" --input "$file"
+            echo "🚀 Démarrage du worker $((i+1)) sur le fichier : $file" | tee -a "$LOG_FILE"
+            echo "🆔 PID du worker : $!" | tee -a "$LOG_FILE"
+            pids+=($!)
             ;;
         products_catalog.csv|products_catalog.xlsx)
             python3 "$PIPELINE_ROOT/processing/product_processor.py" --input "$file"
+            echo "🚀 Démarrage du worker $((i+1)) sur le fichier : $file" | tee -a "$LOG_FILE"
+            echo "🆔 PID du worker : $!" | tee -a "$LOG_FILE"
+            pids+=($!)
             ;;
         *)
             echo "⚠️  Type de fichier inconnu ou non pris en charge : $filename" | tee -a "$LOG_FILE"

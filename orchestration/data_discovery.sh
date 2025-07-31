@@ -26,7 +26,7 @@ if [ -f "$API_LOGS_ZIP" ] && [ ! -f "$API_LOGS_DONE" ]; then
     mkdir -p "$API_LOGS_TMP" "$STAGING_DIR/api_logs"
     
     # Liste les fichiers .json.gz dans l'archive et extrait les 10 premiers
-    unzip -Z1 "$API_LOGS_ZIP" '*.json.gz' | head -n 10 | while read -r file; do
+    unzip -Z1 "$API_LOGS_ZIP" '*.json.gz' | while read -r file; do
         unzip -j "$API_LOGS_ZIP" "$file" -d "$API_LOGS_TMP" >> "$LOG_FILE"
     done
 
@@ -34,7 +34,7 @@ if [ -f "$API_LOGS_ZIP" ] && [ ! -f "$API_LOGS_DONE" ]; then
     for gzfile in "$API_LOGS_TMP"/*.json.gz; do
         filename=$(basename "$gzfile" .gz)
         gunzip -c "$gzfile" > "$STAGING_DIR/api_logs/$filename"
-        echo "📄 Décompressé : $filename" | tee -a "$LOG_FILE"
+        # echo "📄 Décompressé : $filename" | tee -a "$LOG_FILE"
     done
 
     rm -rf "$API_LOGS_TMP"
@@ -85,14 +85,14 @@ done
 echo "✅ Scan terminé." | tee -a "$LOG_FILE"
 
 
-# 4. Archivage des fichiers RAW nouvellement traités
-echo "📦 Archivage des fichiers RAW traités..." | tee -a "$LOG_FILE"
+# # 4. Archivage des fichiers RAW nouvellement traités
+# echo "📦 Archivage des fichiers RAW traités..." | tee -a "$LOG_FILE"
 
-files_to_archive=$(find "$RAW_DIR" -maxdepth 1 -type f \( -name "*.csv" -o -name "*.xlsx" -o -name "*.zip" \) -exec test -f "{}.done" \; -print)
+# files_to_archive=$(find "$RAW_DIR" -maxdepth 1 -type f \( -name "*.csv" -o -name "*.xlsx" -o -name "*.zip" \) -exec test -f "{}.done" \; -print)
 
-if [ -n "$files_to_archive" ]; then
-    tar -czf "$RAW_ARCHIVE" $files_to_archive
-    echo "✅ Archive créée : $RAW_ARCHIVE" | tee -a "$LOG_FILE"
-else
-    echo "ℹ️ Aucun fichier à archiver pour le moment." | tee -a "$LOG_FILE"
-fi
+# if [ -n "$files_to_archive" ]; then
+#     tar -czf "$RAW_ARCHIVE" $files_to_archive
+#     echo "✅ Archive créée : $RAW_ARCHIVE" | tee -a "$LOG_FILE"
+# else
+#     echo "ℹ️ Aucun fichier à archiver pour le moment." | tee -a "$LOG_FILE"
+# fi

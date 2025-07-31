@@ -55,7 +55,20 @@ initialize_data_pipeline() {
         echo "🧹 Nettoyage du dossier staging..." | tee -a "$LOG_FILE"
         rm -r "$PIPELINE_ROOT/data/staging/"*
     fi
+    # 🔢 Détection du nombre de cœurs logiques disponibles
+    CPU_CORES=$(nproc)
+    MAX_WORKERS=$((CPU_CORES - 1))  # Laisse 1 cœur libre pour la machine
 
+    # Fallback minimum si calculé < 1
+    if [[ "$MAX_WORKERS" -lt 1 ]]; then
+      MAX_WORKERS=1
+    fi
+    yq e '.data_workers = '"$MAX_WORKERS"'' -i config/pipeline_config.yaml
+    if [ $? -ne 0 ]; then
+        echo "❌ Erreur : échec de mise à jour de config/pipeline_conf.yaml avec yq" | tee -a "$LOG_FILE"
+        exit 1
+    fi
+    echo "🧮 Détection dynamique : $MAX_WORKERS workers autorisés"
     # Chargement des variables d'environnement depuis un fichier pipeline_config.yaml (facultatif ici)
     if [ -f "$PIPELINE_ROOT/config/pipeline_config.yaml" ]; then
     
@@ -174,7 +187,7 @@ consolidate_data_results          # (optionnel) Fusion des résultats => dev ok
 monitor_data_quality            # Contrôle qualité avant-traitement => dev ok
 run_alert_manager
 generate_dashboard              # Génére le tableau de bord html de la qualité de donnée
-archive_processed_data          # Archivage des fichiers traités
+# archive_processed_data          # Archivage des fichiers traités
 echo "✅ PIPELINE TERMINÉ À $(date)" | tee -a "$LOG_FILE"
 # 🧹 Correction des permissions pour le runner GitHub
 chown -R $(id -u):$(id -g) "$PIPELINE_ROOT/data" "$PIPELINE_ROOT/logs" 2>/dev/null || true
